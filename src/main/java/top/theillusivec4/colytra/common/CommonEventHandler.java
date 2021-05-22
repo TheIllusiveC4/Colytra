@@ -67,21 +67,23 @@ public class CommonEventHandler {
         || EnchantmentHelper.getEnchantmentLevel(Enchantments.MENDING, elytraStack) <= 0) {
       return;
     }
-    evt.setCanceled(true);
     ExperienceOrbEntity xpOrb = evt.getOrb();
 
     if (xpOrb.delayBeforeCanPickup == 0 && player.xpCooldown == 0) {
       player.xpCooldown = 2;
       player.onItemPickup(xpOrb, 1);
       int i = Math.min(xpToDurability(xpOrb.xpValue), elytraStack.getDamage());
+      if (i <= 0) return; // no mending happens
       xpOrb.xpValue -= durabilityToXp(i);
       elytraStack.setDamage(elytraStack.getDamage() - i);
+      ElytraNBT.setElytra(chestStack, elytraStack); // write back NBT
 
       if (xpOrb.xpValue > 0) {
         player.giveExperiencePoints(xpOrb.xpValue);
       }
 
       xpOrb.remove();
+      evt.setCanceled(true); // only cancel when mending happens
     }
   }
 
